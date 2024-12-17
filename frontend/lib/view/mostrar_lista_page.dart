@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import './crear_persona_page.dart'; // Asegúrate de importar la página de creación
 import '../controllers/datos_controller.dart';
 import '../models/datos_model.dart';
+import 'crear_persona_page.dart';
 
 class MostrarListaPage extends StatefulWidget {
   @override
@@ -27,7 +27,7 @@ class _MostrarListaPageState extends State<MostrarListaPage> {
   Future<void> _eliminarTodos() async {
     try {
       await Future.forEach<DatosApi>(await _controladorDatos.obtenerTodosLosDatos(),
-          (persona) async => await _controladorDatos.eliminarDato(persona.id));
+              (persona) async => await _controladorDatos.eliminarDato(persona.id));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Todas las personas han sido eliminadas.')),
       );
@@ -114,21 +114,22 @@ class _MostrarListaPageState extends State<MostrarListaPage> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Botón para editar
                       IconButton(
                         icon: Icon(Icons.edit, color: Colors.blue),
                         onPressed: () {
-                          // Navegar a la página de crear/editar
+                          // Navegar a la página de crear/editar y pasar el callback
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => CrearPersonaPage(persona: persona), // Pasa la persona para editarla
+                              builder: (context) => CrearPersonaPage(
+                                persona: persona,
+                              ),
                             ),
-                          );
+                          ).then((_) {
+                            _cargarDatos();  // Recargar los datos al regresar
+                          });
                         },
                       ),
-
-                      // Botón para eliminar
                       IconButton(
                         icon: Icon(Icons.delete, color: Colors.red),
                         onPressed: () async {
@@ -157,9 +158,6 @@ class _MostrarListaPageState extends State<MostrarListaPage> {
                       Icon(Icons.arrow_forward_ios, color: Colors.purple),
                     ],
                   ),
-                  onTap: () {
-                    // Aquí puedes implementar la navegación a una página de detalles si lo necesitas
-                  },
                 );
               },
             );

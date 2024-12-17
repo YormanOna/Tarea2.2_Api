@@ -59,7 +59,7 @@ class _CrearPersonaPageState extends State<CrearPersonaPage> {
           );
         }
 
-        Navigator.pop(context);
+        Navigator.pop(context);  // Regresar a la página anterior y recargar los datos
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${e.toString()}')),
@@ -96,6 +96,10 @@ class _CrearPersonaPageState extends State<CrearPersonaPage> {
                   if (value == null || value.isEmpty) {
                     return 'Por favor, introduce un nombre';
                   }
+                  // Validación para permitir solo letras
+                  if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
+                    return 'El nombre solo debe contener letras';
+                  }
                   return null;
                 },
               ),
@@ -111,6 +115,10 @@ class _CrearPersonaPageState extends State<CrearPersonaPage> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor, introduce un apellido';
+                  }
+                  // Validación para permitir solo letras
+                  if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
+                    return 'El apellido solo debe contener letras';
                   }
                   return null;
                 },
@@ -129,6 +137,10 @@ class _CrearPersonaPageState extends State<CrearPersonaPage> {
                   if (value == null || value.isEmpty) {
                     return 'Por favor, introduce un número de teléfono';
                   }
+                  // Validación para permitir solo números y longitud de 10 caracteres
+                  if (!RegExp(r'^[0-9]{10}$').hasMatch(value)) {
+                    return 'El teléfono debe contener solo 10 dígitos numéricos';
+                  }
                   return null;
                 },
               ),
@@ -138,14 +150,14 @@ class _CrearPersonaPageState extends State<CrearPersonaPage> {
               _isLoading
                   ? CircularProgressIndicator()
                   : ElevatedButton(
-                      onPressed: _crearOActualizarPersona,
-                      child: Text(widget.persona == null ? 'Guardar' : 'Actualizar'),
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.purple,
-                        textStyle: TextStyle(fontSize: 16),
-                      ),
-                    ),
+                onPressed: _crearOActualizarPersona,
+                child: Text(widget.persona == null ? 'Guardar' : 'Actualizar'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.purple,
+                  textStyle: TextStyle(fontSize: 16),
+                ),
+              ),
             ],
           ),
         ),
