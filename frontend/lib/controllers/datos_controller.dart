@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/datos_model.dart';	 
+import '../models/datos_model.dart';
 
 class ControladorDatos {
-  final String baseUrl = 'http://localhost:5000/api/personas'; // Cambia esto por la URL de tu servidor
+  final String baseUrl = 'http://localhost:5000/api/personas'; // Cambia a tu URL pública si usas un servidor remoto
 
   // Obtener una persona por ID
-  Future<DatosApi> obtenerUnDato(int id) async {
+  Future<DatosApi> obtenerUnDato(String id) async { // Cambié int a String
     final response = await http.get(Uri.parse('$baseUrl/$id'));
 
     if (response.statusCode == 200) {
@@ -19,13 +19,17 @@ class ControladorDatos {
     }
   }
 
-  // Obtener todas las personas con paginación
+  // Obtener todas las personas
   Future<List<DatosApi>> obtenerTodosLosDatos() async {
     final response = await http.get(Uri.parse(baseUrl));
 
     if (response.statusCode == 200) {
       final List<dynamic> datos = json.decode(response.body);
-      return datos.map((json) => DatosApi.fromJson(json)).toList();
+      if (datos.isNotEmpty) {
+        return datos.map((json) => DatosApi.fromJson(json)).toList();
+      } else {
+        return []; // Retorna una lista vacía si no hay datos
+      }
     } else {
       throw Exception('Error al obtener los datos');
     }
@@ -37,7 +41,11 @@ class ControladorDatos {
 
     if (response.statusCode == 200) {
       final List<dynamic> datos = json.decode(response.body);
-      return datos.map((json) => DatosApi.fromJson(json)).toList();
+      if (datos.isNotEmpty) {
+        return datos.map((json) => DatosApi.fromJson(json)).toList();
+      } else {
+        return []; // Manejo de respuesta vacía
+      }
     } else {
       throw Exception('Error al filtrar datos');
     }
@@ -60,7 +68,7 @@ class ControladorDatos {
   }
 
   // Actualizar una persona por ID
-  Future<DatosApi> actualizarDato(int id, Map<String, dynamic> datos) async {
+  Future<DatosApi> actualizarDato(String id, Map<String, dynamic> datos) async { // Cambié int a String
     final response = await http.put(
       Uri.parse('$baseUrl/$id'),
       headers: {'Content-Type': 'application/json'},
@@ -76,7 +84,7 @@ class ControladorDatos {
   }
 
   // Eliminar una persona por ID
-  Future<void> eliminarDato(int id) async {
+  Future<void> eliminarDato(String id) async { // Cambié int a String
     final response = await http.delete(Uri.parse('$baseUrl/$id'));
 
     if (response.statusCode != 200) {
