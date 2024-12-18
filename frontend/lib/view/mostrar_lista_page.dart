@@ -26,8 +26,10 @@ class _MostrarListaPageState extends State<MostrarListaPage> {
 
   Future<void> _eliminarTodos() async {
     try {
-      await Future.forEach<DatosApi>(await _controladorDatos.obtenerTodosLosDatos(),
-              (persona) async => await _controladorDatos.eliminarDato(persona.id));
+      await Future.forEach<DatosApi>(
+        await _controladorDatos.obtenerTodosLosDatos(),
+        (persona) async => await _controladorDatos.eliminarDato(persona.id),
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Todas las personas han sido eliminadas.')),
       );
@@ -58,7 +60,9 @@ class _MostrarListaPageState extends State<MostrarListaPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Lista de Personas'),
-        backgroundColor: Colors.purple,
+        backgroundColor: const Color.fromARGB(255, 40, 80, 99),
+        centerTitle: true,
+        elevation: 5,
         actions: [
           IconButton(
             icon: Icon(Icons.delete_forever),
@@ -88,81 +92,110 @@ class _MostrarListaPageState extends State<MostrarListaPage> {
           ),
         ],
       ),
-      body: FutureBuilder<List<DatosApi>>(
-        future: _datosFuturos,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No se encontraron personas.'));
-          } else {
-            final datos = snapshot.data!;
-            return ListView.builder(
-              itemCount: datos.length,
-              itemBuilder: (context, index) {
-                final persona = datos[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    child: Text(persona.nombre[0]),
-                    backgroundColor: Colors.purple,
-                    foregroundColor: Colors.white,
-                  ),
-                  title: Text('${persona.nombre} ${persona.apellido}'),
-                  subtitle: Text('Teléfono: ${persona.telefono}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () {
-                          // Navegar a la página de crear/editar y pasar el callback
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CrearPersonaPage(
-                                persona: persona,
-                              ),
-                            ),
-                          ).then((_) {
-                            _cargarDatos();  // Recargar los datos al regresar
-                          });
-                        },
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color.fromARGB(255, 174, 221, 245), Color.fromARGB(255, 120, 156, 186)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: FutureBuilder<List<DatosApi>>(
+          future: _datosFuturos,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error, size: 50, color: Colors.red),
+                    SizedBox(height: 10),
+                    Text('Error: ${snapshot.error}', style: TextStyle(fontSize: 16)),
+                  ],
+                ),
+              );
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.people_outline, size: 80, color: Colors.white),
+                    SizedBox(height: 10),
+                    Text('No se encontraron personas.', style: TextStyle(fontSize: 18, color: Colors.white)),
+                  ],
+                ),
+              );
+            } else {
+              final datos = snapshot.data!;
+              return ListView.builder(
+                itemCount: datos.length,
+                itemBuilder: (context, index) {
+                  final persona = datos[index];
+                  return Card(
+                    margin: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        radius: 30,
+                        child: Text(
+                          persona.nombre[0],
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        backgroundColor: const Color.fromARGB(255, 40, 80, 99),
                       ),
-                      IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () async {
-                          final confirmar = await showDialog<bool>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: Text('Confirmar eliminación'),
-                              content: Text('¿Estás seguro de que deseas eliminar a esta persona?'),
-                              actions: [
-                                TextButton(
-                                  child: Text('Cancelar'),
-                                  onPressed: () => Navigator.pop(context, false),
+                      title: Text('${persona.nombre} ${persona.apellido}', style: TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text('Teléfono: ${persona.telefono}'),
+                      trailing: Wrap(
+                        spacing: 10,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CrearPersonaPage(persona: persona),
                                 ),
-                                TextButton(
-                                  child: Text('Eliminar'),
-                                  onPressed: () => Navigator.pop(context, true),
+                              ).then((_) => _cargarDatos());
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () async {
+                              final confirmar = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: Text('Confirmar eliminación'),
+                                  content: Text('¿Estás seguro de que deseas eliminar a esta persona?'),
+                                  actions: [
+                                    TextButton(
+                                      child: Text('Cancelar'),
+                                      onPressed: () => Navigator.pop(context, false),
+                                    ),
+                                    TextButton(
+                                      child: Text('Eliminar'),
+                                      onPressed: () => Navigator.pop(context, true),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          );
-                          if (confirmar == true) {
-                            await _eliminarPorId(persona.id);
-                          }
-                        },
+                              );
+                              if (confirmar == true) {
+                                await _eliminarPorId(persona.id);
+                              }
+                            },
+                          ),
+                        ],
                       ),
-                      Icon(Icons.arrow_forward_ios, color: Colors.purple),
-                    ],
-                  ),
-                );
-              },
-            );
-          }
-        },
+                    ),
+                  );
+                },
+              );
+            }
+          },
+        ),
       ),
     );
   }
